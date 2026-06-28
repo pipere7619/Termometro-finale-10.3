@@ -1,47 +1,43 @@
 import streamlit as st
 
+st.set_page_config(page_title="Termometro 10.3", layout="centered")
+
 st.title("🌡️ Termometro 10.3")
 
-# Layout a due colonne per migliorare l'estetica
+# Input Squadre
 col1, col2 = st.columns(2)
-
 with col1:
-    st.subheader("Casa")
-    n_cs = st.text_input("Nome Casa", key="n_cs")
-    p_cs = st.number_input("Punti Casa", 0.0, key="p_cs")
-    t_cs = st.number_input("Tiri Casa", 0.0, key="t_cs")
-    g_cs = st.number_input("Gol Casa", 0.0, key="g_cs")
-    c_cs = st.number_input("Clean Sheet Casa", 0, key="c_cs")
+    n_c = st.text_input("Squadra Casa")
+    p_c = st.number_input("Punti Casa", 0.0)
+    t_c = st.number_input("Tiri Casa", 0.0)
+    g_c = st.number_input("Gol Casa", 0.0)
+    c_c = st.number_input("Clean Sheet Casa", 0)
 
 with col2:
-    st.subheader("Ospite")
-    n_os = st.text_input("Nome Ospite", key="n_os")
-    p_os = st.number_input("Punti Ospite", 0.0, key="p_os")
-    t_os = st.number_input("Tiri Ospite", 0.0, key="t_os")
-    g_os = st.number_input("Gol Ospite", 0.0, key="g_os")
-    c_os = st.number_input("Clean Sheet Ospite", 0, key="c_os")
+    n_o = st.text_input("Squadra Ospite")
+    p_o = st.number_input("Punti Ospite", 0.0)
+    t_o = st.number_input("Tiri Ospite", 0.0)
+    g_o = st.number_input("Gol Ospite", 0.0)
+    c_o = st.number_input("Clean Sheet Ospite", 0)
 
-st.write("---")
-
+# Calcolo Semplificato
 if st.button("CALCOLA"):
-    # Calcolo valori
-    val_c = (p_cs * 0.1) + (t_cs * 0.1) + (g_cs * 0.8)
-    if c_cs > 3: 
-        val_c *= 1.05
+    def calc(p, t, g, c):
+        v = (p*0.1) + (t*0.1) + (g*0.8)
+        return v * 1.05 if c > 3 else v
     
-    val_o = (p_os * 0.1) + (t_os * 0.1) + (g_os * 0.8)
-    if c_os > 3: 
-        val_o *= 1.05
-    
+    val_c = calc(p_c, t_c, g_c, c_c)
+    val_o = calc(p_o, t_o, g_o, c_o)
     tot = val_c + val_o
     
     if tot > 0:
-        res_c = (val_c / tot) * 100
-        res_o = (val_o / tot) * 100
+        perc_c = (val_c/tot)*100
+        perc_o = (val_o/tot)*100
         
-        # Visualizzazione risultati
-        col_r1, col_r2 = st.columns(2)
-        col_r1.metric(f"Probabilità 1X ({n_cs if n_cs else 'Casa'})", f"{res_c:.1f}%")
-        col_r2.metric(f"Probabilità X2 ({n_os if n_os else 'Ospite'})", f"{res_o:.1f}%")
-    else:
-        st.warning("Inserisci dei dati validi per ottenere un calcolo.")
+        st.write(f"### Risultato:")
+        st.metric(f"1X {n_c}", f"{perc_c:.1f}%")
+        st.metric(f"X2 {n_o}", f"{perc_o:.1f}%")
+        
+        if perc_c >= 54.0: st.success(f"🟢 GIOCABILE: 1X")
+        elif perc_o >= 54.0: st.success(f"🟢 GIOCABILE: X2")
+        else: st.warning("🟡 PASSARE")
