@@ -1,0 +1,1 @@
+# Termometro-finale-10.3
