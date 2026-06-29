@@ -43,19 +43,27 @@ if st.button("CALCOLA TUTTO"):
     val_o = calc(p_o, t_o, g_o, c_o, n_o)
     tot = val_c + val_o
     
-    # Percentuali forza relativa
-    perc_1x = (val_c / tot) * 100
-    perc_x2 = (val_o / tot) * 100
+    # LOGICA DI NORMALIZZAZIONE CORRETTA
+    # La probabilità di vittoria secca (1 o 2) dipende dalla differenza relativa
+    diff_relativa = abs(val_c - val_o) / tot
     
-    # Calcolo 1-2 (No Pareggio) e Pareggio stimato
-    diff = abs(val_c - val_o)
-    perc_12 = min((diff / tot) * 200, 100.0)
-    perc_x = 100 - perc_12
+    # Stimiamo una base statistica di pareggio (es. 25-30% nel calcio)
+    # Più le squadre sono vicine (diff piccola), più il pareggio è probabile
+    perc_x = max(20.0, (1.0 - diff_relativa) * 40.0)
     
-    # Calcolo Valore (Value Betting)
-    valore_1 = "SÌ" if ((perc_1x / 100) * q_1) > 1.05 else "NO"
+    # Distribuiamo il resto (100 - perc_x) tra 1 e 2 in base alla loro forza
+    perc_restante = 100.0 - perc_x
+    perc_1 = (val_c / tot) * perc_restante
+    perc_2 = (val_o / tot) * perc_restante
+    
+    # Esiti finali
+    perc_1x = perc_1 + (perc_x / 2)
+    perc_x2 = perc_2 + (perc_x / 2)
+    
+    # Calcolo Valore
+    valore_1 = "SÌ" if ((perc_1 / 100) * q_1) > 1.05 else "NO"
     valore_x = "SÌ" if ((perc_x / 100) * q_x) > 1.05 else "NO"
-    valore_2 = "SÌ" if ((perc_x2 / 100) * q_2) > 1.05 else "NO"
+    valore_2 = "SÌ" if ((perc_2 / 100) * q_2) > 1.05 else "NO"
     
     st.write("### Risultati:")
     st.metric("Probabilità 1X", f"{perc_1x:.1f}%")
@@ -63,9 +71,9 @@ if st.button("CALCOLA TUTTO"):
     st.metric("Probabilità X2", f"{perc_x2:.1f}%")
     
     st.write("---")
-    st.write(f"**Valore 1:** {valore_1} | **Valore X:** {valore_2} | **Valore 2:** {valore_2}")
+    st.write(f"**Valore 1:** {valore_1} | **Valore X:** {valore_x} | **Valore 2:** {valore_2}")
     
     if perc_1x >= 52.0 and valore_1 == "SÌ": st.success("🟢 1X GIOCABILE (VALORE)")
     elif perc_x2 >= 52.0 and valore_2 == "SÌ": st.success("🟢 X2 GIOCABILE (VALORE)")
-    elif perc_x < 60.0 and q_x >= 3.40: st.success("🟢 PAREGGIO (X) AD ALTO VALORE")
+    elif perc_x >= 30.0 and valore_x == "SÌ": st.success("🟢 PAREGGIO (X) AD ALTO VALORE")
     else: st.warning("🟡 PASSARE")
