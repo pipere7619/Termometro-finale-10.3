@@ -8,24 +8,24 @@ st.subheader("Analisi Pre-Match con Solidità Difensiva")
 col1, col2 = st.columns(2)
 with col1:
     st.markdown("### Casa")
-    p_c = st.number_input("Punti (Totali)", 0.0)
-    tp_c = st.number_input("Media Tiri in Porta (AVG)", 0.0)
-    g_c = st.number_input("Media Gol Fatti (AVG)", 0.0)
-    cs_c = st.number_input("Media Clean Sheet (AVG)", 0.0)
-    q_1 = st.number_input("Quota 1", 1.0, 10.0, 2.0)
+    p_c = st.number_input("Punti Casa", 0.0, key="p_c")
+    tp_c = st.number_input("Media Tiri in Porta Casa (AVG)", 0.0, key="tp_c")
+    g_c = st.number_input("Media Gol Fatti Casa (AVG)", 0.0, key="g_c")
+    cs_c = st.number_input("Media Clean Sheet Casa (AVG)", 0.0, key="cs_c")
+    q_1 = st.number_input("Quota 1", 1.0, 10.0, 2.0, key="q_1")
 
 with col2:
     st.markdown("### Ospite")
-    p_o = st.number_input("Punti (Totali)", 0.0)
-    tp_o = st.number_input("Media Tiri in Porta (AVG)", 0.0)
-    g_o = st.number_input("Media Gol Fatti (AVG)", 0.0)
-    cs_o = st.number_input("Media Clean Sheet (AVG)", 0.0)
-    q_2 = st.number_input("Quota 2", 1.0, 10.0, 2.0)
+    p_o = st.number_input("Punti Ospite", 0.0, key="p_o")
+    tp_o = st.number_input("Media Tiri in Porta Ospite (AVG)", 0.0, key="tp_o")
+    g_o = st.number_input("Media Gol Fatti Ospite (AVG)", 0.0, key="g_o")
+    cs_o = st.number_input("Media Clean Sheet Ospite (AVG)", 0.0, key="cs_o")
+    q_2 = st.number_input("Quota 2", 1.0, 10.0, 2.0, key="q_2")
 
-q_x = st.number_input("Quota Pareggio (X)", 1.0, 10.0, 3.2)
+q_x = st.number_input("Quota Pareggio (X)", 1.0, 10.0, 3.2, key="q_x")
 
 if st.button("CALCOLA CON SOLIDITÀ"):
-    # Calcolo Forza: Punti (0.5), Tiri (3.0), Gol (5.0), Clean Sheet (8.0)
+    # Calcolo Forza: Punti (0.05), Tiri (3.0), Gol (5.0), Clean Sheet (8.0)
     f_c = (p_c * 0.05) + (tp_c * 3.0) + (g_c * 5.0) + (cs_c * 8.0)
     f_o = (p_o * 0.05) + (tp_o * 3.0) + (g_o * 5.0) + (cs_o * 8.0)
     
