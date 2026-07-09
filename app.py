@@ -1,39 +1,3 @@
-import streamlit as st
-
-# --- MOTORE DI CALCOLO ---
-def analisi_sniper_pro_master(gf_c, gs_c, gf_o, gs_o, competizione, q1, qx, q2):
-    rischio = (gs_c + gs_o)
-    media_gol = (gf_c + gf_o + gs_c + gs_o) / 2
-    rating = 5
-    messaggi = []
-    is_coppa = any(x in competizione.lower() for x in ["champions", "conference", "qualificazione", "europa", "coppa"])
-    
-    if is_coppa:
-        rischio *= 1.3
-        rating -= 2
-        messaggi.append("⚠️ Coppa: Rischio aumentato.")
-    if rischio < 2.0 and media_gol > 2.8:
-        messaggi.append("⚠️ Conflitto: Segno X sconsigliato.")
-        rating -= 1
-    if rischio > 2.5:
-        rating -= 2
-    
-    rating = max(1, min(5, rating))
-    prob_1 = (1 / q1) * 100
-    return rischio, media_gol, rating, messaggi, prob_1
-
-# --- INTERFACCIA UI OTTIMIZZATA ---
-st.title("Sniper PRO: Master V2")
-
-comp = st.text_input("Competizione", "Campionato")
-
-# Input ordinati per Casa e Ospite
-col_casa, col_ospite = st.columns(2)
-
-with col_casa:
-    st.subheader("🏠 Casa")
-    gf_c = st.number_input("Gol Fatti Casa", value=2.0, step=0.1)
-    gs_c = st.number_input("Gol Subiti Casa", value=1.0, step=0.1)
 
 with col_ospite:
     st.subheader("✈️ Ospite")
