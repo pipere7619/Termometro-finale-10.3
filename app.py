@@ -1,58 +1,68 @@
 import streamlit as st
 
-st.set_page_config(page_title="Termometro 10.5 Pro", layout="centered")
-st.title("🌡️ Termometro 10.5 Pro")
-st.subheader("Analisi Pre-Match con Solidità Difensiva")
+# --- MOTORE DI CALCOLO ---
+def analisi_sniper_pro_master(gf_c, gs_c, gf_o, gs_o, competizione, q1, qx, q2):
+    rischio = (gs_c + gs_o)
+    media_gol = (gf_c + gf_o + gs_c + gs_o) / 2
+    rating = 5
+    messaggi = []
+    is_coppa = any(x in competizione.lower() for x in ["champions", "conference", "qualificazione", "europa", "coppa"])
+    
+    if is_coppa:
+        rischio *= 1.3
+        rating -= 2
+        messaggi.append("⚠️ Coppa: Rischio aumentato.")
+    if rischio < 2.0 and media_gol > 2.8:
+        messaggi.append("⚠️ Conflitto: Segno X sconsigliato.")
+        rating -= 1
+    if rischio > 2.5:
+        rating -= 2
+    
+    rating = max(1, min(5, rating))
+    prob_1 = (1 / q1) * 100
+    return rischio, media_gol, rating, messaggi, prob_1
 
-# Input Dati (Utilizzare sempre le Medie AVG delle ultime 10 partite)
-col1, col2 = st.columns(2)
-with col1:
-    st.markdown("### Casa")
-    p_c = st.number_input("Punti Casa", 0.0, key="p_c")
-    tp_c = st.number_input("Media Tiri in Porta Casa (AVG)", 0.0, key="tp_c")
-    g_c = st.number_input("Media Gol Fatti Casa (AVG)", 0.0, key="g_c")
-    cs_c = st.number_input("Media Clean Sheet Casa (AVG)", 0.0, key="cs_c")
-    q_1 = st.number_input("Quota 1", 1.0, 10.0, 2.0, key="q_1")
+# --- INTERFACCIA UI OTTIMIZZATA ---
+st.title("Sniper PRO: Master V2")
 
-with col2:
-    st.markdown("### Ospite")
-    p_o = st.number_input("Punti Ospite", 0.0, key="p_o")
-    tp_o = st.number_input("Media Tiri in Porta Ospite (AVG)", 0.0, key="tp_o")
-    g_o = st.number_input("Media Gol Fatti Ospite (AVG)", 0.0, key="g_o")
-    cs_o = st.number_input("Media Clean Sheet Ospite (AVG)", 0.0, key="cs_o")
-    q_2 = st.number_input("Quota 2", 1.0, 10.0, 2.0, key="q_2")
+comp = st.text_input("Competizione", "Campionato")
 
-q_x = st.number_input("Quota Pareggio (X)", 1.0, 10.0, 3.2, key="q_x")
+# Input ordinati per Casa e Ospite
+col_casa, col_ospite = st.columns(2)
 
-if st.button("CALCOLA CON SOLIDITÀ"):
-    # Calcolo Forza: Punti (0.05), Tiri (3.0), Gol (5.0), Clean Sheet (8.0)
-    f_c = (p_c * 0.05) + (tp_c * 3.0) + (g_c * 5.0) + (cs_c * 8.0)
-    f_o = (p_o * 0.05) + (tp_o * 3.0) + (g_o * 5.0) + (cs_o * 8.0)
+with col_casa:
+    st.subheader("🏠 Casa")
+    gf_c = st.number_input("Gol Fatti Casa", value=2.0, step=0.1)
+    gs_c = st.number_input("Gol Subiti Casa", value=1.0, step=0.1)
+
+with col_ospite:
+    st.subheader("✈️ Ospite")
+    gf_o = st.number_input("Gol Fatti Ospite", value=1.5, step=0.1)
+    gs_o = st.number_input("Gol Subiti Ospite", value=1.2, step=0.1)
+
+# Quote su una riga
+c3, c4, c5 = st.columns(3)
+q1 = c3.number_input("Q1", value=2.50, step=0.01)
+qx = c4.number_input("QX", value=3.40, step=0.01)
+q2 = c5.number_input("Q2", value=2.35, step=0.01)
+
+if st.button("Analizza Partita", use_container_width=True):
+    rischio, media, rating, avvisi, prob_1 = analisi_sniper_pro_master(gf_c, gs_c, gf_o, gs_o, comp, q1, qx, q2)
     
-    # Rapporto di forza
-    tot = f_c + f_o
-    diff_forza = abs(f_c - f_o) / tot
+    # Risultati
+    r1, r2 = st.columns(2)
+    r1.write(f"### {'⭐' * rating}")
+    r2.metric("Rischio", f"{rischio:.2f}")
     
-    # La X è supportata se c'è solidità (bonus CS)
-    bonus_x = (cs_c + cs_o) * 2.0 
+    st.metric("Probabilità Mercato (1)", f"{prob_1:.1f}%")
     
-    # Penalità di Forza: se le squadre sono sbilanciate, la X viene penalizzata
-    penalita_pareggio = max(0.0, (diff_forza - 0.15) * 150.0)
-    
-    # Calcolo finale probabilità X
-    perc_x = max(5.0, (30.0 + bonus_x) - penalita_pareggio)
-    
-    # Calcolo Valore (Soglia 1.15)
-    valore_x = "SÌ" if ((perc_x / 100) * q_x) > 1.15 else "NO"
-    
-    st.write("---")
-    st.metric("Probabilità Pareggio (X)", f"{perc_x:.1f}%")
-    st.write(f"**Valore Pareggio:** {valore_x}")
-    
-    # Feedback visivo
-    if perc_x > 25.0 and valore_x == "SÌ":
-        st.success("🟢 PAREGGIO (X) AD ALTO VALORE")
-    elif diff_forza > 0.3:
-        st.warning("⚠️ Partita sbilanciata: il pareggio è altamente improbabile.")
+    for avviso in avvisi:
+        st.warning(avviso)
+        
+    s1, s2 = st.columns(2)
+    if rating >= 3:
+        s1.success("✅ 1X / DC")
+        s2.success("✅ GOAL")
     else:
-        st.info("⚪ Analisi neutra: nessuna indicazione forte sulla X.")
+        s1.error("🚫 NO 1X2")
+        s2.info("✅ SOLO GOAL")
